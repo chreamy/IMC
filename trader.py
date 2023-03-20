@@ -13,7 +13,7 @@ class Trader:
         pearl_position = state.position.get('PEARLS', 0)
         banana_position = state.position.get('BANANAS', 0)
         for product in state.order_depths.keys():
-            """if product == 'PEARLS':
+            if product == 'PEARLS':
                 order_depth: OrderDepth = state.order_depths[product]
                 orders: list[Order] = []
                 acceptable_price = 10000
@@ -37,7 +37,7 @@ class Trader:
                         print("SELL", str(best_bid_volume) + "x", best_bid, 'pearl_positions:',pearl_position,'balance:',Trader.profit, 'profit:',Trader.profit+pearl_position*10000+banana_position*mid_banana[-1])
 
 
-                result[product] = orders"""
+                result[product] = orders
 
             if product == 'BANANAS':
                 order_depth: OrderDepth = state.order_depths[product]
