@@ -57,7 +57,7 @@ window_size = 5
 i = window_size
 ma = [4938 for i in range(window_size)]
 while i < len(ban['bmid']) - window_size + 1:
-    window_average = round(np.sum(ban['bmid'][i-window_size:i+window_size]) / window_size*0.5, 2)
+    window_average = round(np.sum(ban['bmid'][i-window_size:i]) / window_size, 2)
     ma.append(window_average)
     i += 1
 

@@ -1,7 +1,8 @@
 from typing import Dict, List
 from datamodel import OrderDepth, TradingState, Order
 import numpy as np
-mid = []
+mid_banana = []
+mid_pearl = []
 class Trader:
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
         """
@@ -14,12 +15,11 @@ class Trader:
             if product == 'PEARLS':
 
                 order_depth: OrderDepth = state.order_depths[product]
-
+                if len(order_depth.sell_orders) > 0 and len(order_depth.buy_orders) > 0:
+                    mid_pearl.append((max(order_depth.buy_orders.keys())+min(order_depth.sell_orders.keys()))/2)
                 orders: list[Order] = []
-
-                acceptable_price = 10000
-                std = 1.4930531638223736
-                factor = -2
+                avg_window = 50
+                acceptable_price = sum(mid_pearl[-avg_window:]) / len(mid_pearl[-avg_window:])
                 if len(order_depth.sell_orders) > 0:
                     best_ask = min(order_depth.sell_orders.keys())
                     best_ask_volume = order_depth.sell_orders[best_ask]
@@ -41,10 +41,10 @@ class Trader:
             if product == 'BANANAS':
                 order_depth: OrderDepth = state.order_depths[product]
                 if len(order_depth.sell_orders) > 0 and len(order_depth.buy_orders) > 0:
-                    mid.append((max(order_depth.buy_orders.keys())+min(order_depth.sell_orders.keys()))/2)
+                    mid_banana.append((max(order_depth.buy_orders.keys())+min(order_depth.sell_orders.keys()))/2)
                 orders: list[Order] = []
                 avg_window = 5
-                acceptable_price = sum(mid[-avg_window:])/len(mid[-avg_window:])
+                acceptable_price = sum(mid_banana[-avg_window:])/len(mid_banana[-avg_window:])
                 std = 7.95
                 factor = 0
 
