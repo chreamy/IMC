@@ -1,3 +1,5 @@
+import pandas as pd
+
 f = open("example.csv","r")
 import numpy as np
 import matplotlib.pyplot as plt
@@ -53,20 +55,27 @@ ban['bmid']=[(ban['bask'][i]+ban['bbid'][i])/2 for i in range(len(ban['bask']))]
 #plt.legend()
 #plt.show()
 
-window_size = 5
+window_size =50
 i = window_size
-ma = [4938 for i in range(window_size)]
-while i < len(ban['bmid']) - window_size + 1:
+ma50 = [4938 for i in range(window_size)]
+while i < len(ban['bmid']) + 1:
     window_average = round(np.sum(ban['bmid'][i-window_size:i]) / window_size, 2)
-    ma.append(window_average)
+    ma50.append(window_average)
+    i += 1
+window_size = 200
+i = window_size
+ma200 = [4938 for i in range(window_size)]
+while i < len(ban['bmid']) + 1:
+    window_average = round(np.sum(ban['bmid'][i-window_size:i]) / window_size, 2)
+    ma200.append(window_average)
     i += 1
 
 plt.plot([i for i in range(len(ban['bbid']))],ban['bbid'],label="bid")
 plt.plot([i for i in range(len(ban['bask']))],ban['bask'],label="ask")
-plt.plot([i for i in range(len(ma))],ma,label="mid")
+plt.plot(ma50,label="mid")
+plt.plot(ma200,label="mid200")
 plt.legend()
 plt.show()
-print((ma))
 print(len(ban['bask']))
 print(np.mean(per['bask']),np.std(per['mid']))
 print(np.mean(ban['mid']),np.std(ban['mid']))
