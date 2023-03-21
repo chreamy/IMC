@@ -57,7 +57,9 @@ bwb = bw*wb
 bsb = bs*sb
 print('sbwps',sbwps,'sbpws',sbpws,'swbps',swbps,'swpbs',swpbs,'spwbs',spwbs,'spbws',spbws,'sbws',sbws,'sbps',sbps,'spws',spws,'spbs',spbs,'swbs',swbs,'swps',swps,'sps',sps,'sbs',sbs,'sws',sws)
 spsps = sp*ps*sp*ps
-spwbps = sp*pw*wb*bp*ps
-print(spwbps)
+swpwps = sw*wp*pw*wp*ps
+print(swpwps)
+print(pbp,psp,pwp,wpw,wbw,wsw,bpb,bwb,bsb)
 print(wpbw,wspw,wbpw,wpsw ,wsbw ,wbsw )
 print(pbwp,psbp,pwsp,pbsp,pswp,pwbp)
+print(bpsb,bwsb,bspb,bpwb,bwpb,bswb)
