@@ -47,8 +47,8 @@ class Trader:
                 order_depth: OrderDepth = state.order_depths[product]
                 if len(order_depth.sell_orders) > 0 and len(order_depth.buy_orders) > 0:
                     mid_banana.append((max(order_depth.buy_orders.keys())+min(order_depth.sell_orders.keys()))/2)
-                n = 3
-                Trader.ema = Trader.ema + (2 / n + 1) * (mid_banana[-1] - Trader.ema)
+                #n = 10
+                #Trader.ema = Trader.ema + (2 / n + 1) * (mid_banana[-1] - Trader.ema)
                 print(Trader.ema)
                 orders: list[Order] = []
                 avg_window = 5
