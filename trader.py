@@ -49,22 +49,21 @@ class Trader:
                     mid_banana.append((max(order_depth.buy_orders.keys())+min(order_depth.sell_orders.keys()))/2)
                 #n = 10
                 #Trader.ema = Trader.ema + (2 / n + 1) * (mid_banana[-1] - Trader.ema)
-                print(Trader.ema)
                 orders: list[Order] = []
                 avg_window = 5
                 acceptable_price = np.mean(mid_banana[-avg_window:])
-                a50 = np.mean(mid_banana[-50:])
-                a200 = np.mean(mid_banana[-200:])
+                a10 = np.mean(mid_banana[-50:])
+                a100 = np.mean(mid_banana[-200:])
                 std = np.std(mid_banana[-avg_window:])
-                trend_index = a50 - a200
-                factor = 0.1
-                acceptable_price += trend_index*factor
-                #acceptable_price = Trader.ema
-                print('factor',trend_index*factor)
-                if trend_index>0:
-                    hold = 2
+                price = acceptable_price
+                spread = min(order_depth.sell_orders.keys())-max(order_depth.buy_orders.keys())
+                buy = (a10 - a100) >0
+                if buy:
+                    print('buy')
                 else:
-                    hold = -2
+                    print('sell')
+                factor = -0*spread
+                buffer = 0
                 if state.timestamp<600:
                     break
                 if banana_position != 0:
@@ -75,7 +74,7 @@ class Trader:
                         best_ask_volume=-Trader.limit
                     if banana_position - best_ask_volume > Trader.limit:
                         best_ask_volume = -(Trader.limit - banana_position) - 1
-                    if ((best_ask < acceptable_price) or (banana_position <-15 and best_ask < price)):
+                    if (best_ask < acceptable_price+buffer) or (banana_position <-15 and best_ask < price) or (best_ask < acceptable_price+factor and buy):
                         Trader.profit += best_ask_volume * best_ask
                         Trader.banana_bal += best_ask_volume * best_ask
                         orders.append(Order(product, best_ask, -best_ask_volume))
@@ -90,7 +89,7 @@ class Trader:
                         best_bid_volume=Trader.limit
                     if banana_position - best_bid_volume < -Trader.limit:
                         best_bid_volume = (banana_position + Trader.limit) + 1
-                    if ((best_bid > acceptable_price) or (banana_position>15 and best_bid > price)):
+                    if (best_bid > acceptable_price-buffer) or (banana_position>15 and best_bid > price) or (best_bid > acceptable_price-factor and not buy):
                         Trader.profit += best_bid_volume * best_bid
                         Trader.banana_bal += best_bid_volume * best_bid
                         banana_position -= best_bid_volume
