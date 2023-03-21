@@ -27,7 +27,6 @@ class Trader:
                         pearl_position -= best_ask_volume
                         print("BUY", str(-best_ask_volume) + "x", best_ask, 'pearl_positions:',pearl_position, 'balance:',Trader.profit,'profit:',Trader.profit+pearl_position*10000+banana_position*mid_banana[-1])
                     del order_depth.sell_orders[best_ask]
-
                 while len(order_depth.buy_orders) != 0:
                     best_bid = max(order_depth.buy_orders.keys())
                     best_bid_volume = order_depth.buy_orders[best_bid]
@@ -37,7 +36,6 @@ class Trader:
                         pearl_position -= best_bid_volume
                         print("SELL", str(best_bid_volume) + "x", best_bid, 'pearl_positions:',pearl_position,'balance:',Trader.profit, 'profit:',Trader.profit+pearl_position*10000+banana_position*mid_banana[-1])
                     del order_depth.buy_orders[best_bid]
-
                 result[product] = orders"""
 
             if product == 'BANANAS':
@@ -46,41 +44,46 @@ class Trader:
                     mid_banana.append((max(order_depth.buy_orders.keys())+min(order_depth.sell_orders.keys()))/2)
                 orders: list[Order] = []
                 avg_window = 5
-                acceptable_price = sum(mid_banana[-avg_window:])/len(mid_banana[-avg_window:])
+                acceptable_price = np.mean(mid_banana[-avg_window:])
                 position = state.position.get(product, 0)
-                a50 = sum(mid_banana[-50:])/len(mid_banana[-50:])
-                a200 = sum(mid_banana[-50:]) / len(mid_banana[-50:])
+                a50 = np.mean(mid_banana[-50:])
+                a200 = np.mean(mid_banana[-50:])
                 std = np.std(mid_banana[-avg_window:])
                 trend_index = a50 - a200
                 factor = 0.9
                 price = acceptable_price
-                if banana_position!=0:
+                if banana_position != 0:
                     price = Trader.banana_bal/banana_position
-                while len(order_depth.sell_orders) > 0:
-                    best_ask = min(order_depth.sell_orders.keys())
+                for best_ask in sorted(order_depth.sell_orders):
                     best_ask_volume = order_depth.sell_orders[best_ask]
-                    if (best_ask < acceptable_price or (banana_position<-10 and best_ask < price-factor*trend_index)) and abs(best_ask_volume) <= Trader.limit:
+                    if (best_ask < acceptable_price or (banana_position <-10 and best_ask < price-factor*trend_index)) and abs(best_ask_volume) <= Trader.limit:
                         if abs(banana_position - best_ask_volume) >= Trader.limit:
-                            best_ask_volume = -Trader.limit+abs(banana_position)
+                            best_ask_volume = -Trader.limit+abs(banana_position - best_ask_volume)
+                        else:
+                            best_ask_volume
                         Trader.profit += best_ask_volume * best_ask
                         Trader.banana_bal += best_ask_volume * best_ask
                         orders.append(Order(product, best_ask, -best_ask_volume))
                         banana_position -= best_ask_volume
                         print("BUY", str(-best_ask_volume) + "x", best_ask,'current_market',mid_banana[-1],'banana_positions:',banana_position,'balance:',Trader.profit, 'profit:',Trader.profit+pearl_position*10000+banana_position*mid_banana[-1],'std:',std)
-                    del order_depth.sell_orders[best_ask]
-
-                while len(order_depth.buy_orders) != 0:
-                    best_bid = max(order_depth.buy_orders.keys())
+                    else:
+                        break
+                    order_depth.sell_orders[best_ask]
+                for best_bid in sorted(order_depth.buy_orders, reverse=True):
                     best_bid_volume = order_depth.buy_orders[best_bid]
                     if (best_bid > acceptable_price or (banana_position>10 and best_bid > price+factor*trend_index)) and abs(best_bid_volume) <= Trader.limit:
                         if abs(banana_position - best_bid_volume) >= Trader.limit:
-                            best_bid_volume = Trader.limit-abs(banana_position)
-                        Trader.profit += best_bid_volume * best_bid
-                        Trader.banana_bal += best_bid_volume * best_bid
-                        banana_position -= best_bid_volume
-                        orders.append(Order(product, best_bid, -best_bid_volume))
-                        print("SELL", str(best_bid_volume) + "x", best_bid,'current_market',mid_banana[-1],'banana_positions:',banana_position,'balance:',Trader.profit, 'profit:',Trader.profit+pearl_position*10000+banana_position*mid_banana[-1],'std:',std)
-                    del order_depth.buy_orders[best_bid]
+                            best_bid_volume = Trader.limit-abs(banana_position - best_bid_volume)
+                        else:
+                            best_bid_volume
+                            Trader.profit += best_bid_volume * best_bid
+                            Trader.banana_bal += best_bid_volume * best_bid
+                            banana_position -= best_bid_volume
+                            orders.append(Order(product, best_bid, -best_bid_volume))
+                            print("SELL", str(best_bid_volume) + "x", best_bid,'current_market',mid_banana[-1],'banana_positions:',banana_position,'balance:',Trader.profit, 'profit:',Trader.profit+pearl_position*10000+banana_position*mid_banana[-1],'std:',std)
+                    else:
+                        break
+                    order_depth.buy_orders.pop(best_bid)
 
                 result[product] = orders
-        return result
+            return result
