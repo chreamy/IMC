@@ -11,6 +11,7 @@ class Trader:
     banana_bal = 0
     ema = 5000
     last_trend = 0
+    crits = [{'price':7990,'state':'sell'}]
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
         # Initialize the method output dict as an empty dict
         result = {}
@@ -126,20 +127,20 @@ class Trader:
                 asks = []
                 bids = []
                 spread = min(order_depth.sell_orders.keys()) - max(order_depth.buy_orders.keys())
-                """while len(order_depth.sell_orders) > 0:
+                while len(order_depth.sell_orders) > 0:
                     asks.append({'price': min(order_depth.sell_orders.keys()),
                                 'vol': order_depth.sell_orders[min(order_depth.sell_orders.keys())]})
                     del order_depth.sell_orders[min(order_depth.sell_orders.keys())]
                 while len(order_depth.buy_orders) != 0:
                     bids.append({'price': max(order_depth.buy_orders.keys()),
                                 'vol': order_depth.buy_orders[max(order_depth.buy_orders.keys())]})
-                    del order_depth.buy_orders[max(order_depth.buy_orders.keys())]"""
+                    del order_depth.buy_orders[max(order_depth.buy_orders.keys())]
                 avg_window = 50
                 acceptable_price = np.mean(mid_coco[-avg_window:])
                 factor = int(3 * spread)
-                a50 = np.mean(mid_coco[-10:])
-                a200 = np.mean(mid_coco[-50:])
-                trend = a50-a200
+                a50 = np.mean(mid_coco[-50:])
+                a100 = np.mean(mid_coco[-100:])
+                trend = a50-a100
                 """a10 = np.mean(mid_coco[-50:])
                 a100 = np.mean(mid_coco[-200:])
                 std = np.std(mid_coco[-avg_window:])
@@ -167,11 +168,36 @@ class Trader:
                     coco_position -= bids[0]['vol']
                     print("SELL", str(bids[0]['vol']) + "x", bids[0]['price'], 'coco_positions:',
                         coco_position)"""
-                if trend<0 and abs(trend)<0.1:
+                if abs(trend)<0.5 and abs(Trader.last_trend)>0.5:
                     print('critical point at',mid_coco[-1])
-                elif trend>0 and abs(trend)<0.1:
-                    print('critical point at',mid_coco[-1])
-                    #orders.append(Order(product, mid_coco[-1], 5))
+                    if mid_coco[-1]>Trader.crits[-1]['price']:
+                        Trader.crits.append({'price':mid_coco[-1],'state':'sell'})
+                        #orders.append(Order(product, mid_coco[-1], -coco_position))
+                    else:
+                        Trader.crits.append({'price':mid_coco[-1],'state':'buy'})
+                    print(Trader.crits)
+                elif abs(trend)<0.5:
+                    print(Trader.crits[-1]['state'],'at',Trader.crits[-1]['price'],'ask:',asks[0]['price'],'bid:',bids[0]['price'])
+                    if Trader.crits[-1]['state']=='buy':
+                        if asks[0]['price'] < Trader.crits[-1]['price']:
+                            orders.append(Order(product, asks[0]['price'], -asks[0]['vol']))
+                            print('coco',coco_position)
+                        else:
+                            orders.append(Order(product, Trader.crits[-1]['price'], 20))
+                            print('coco', coco_position)
+                    else:
+                        if asks[0]['price'] > Trader.crits[-1]['price']:
+                            orders.append(Order(product, bids[0]['price'], -bids[0]['vol']))
+                            print('coco', coco_position)
+                        else:
+                            orders.append(Order(product, Trader.crits[-1]['price'], -20))
+                            print('coco', coco_position)
+                elif asks[0]['price']<Trader.crits[-1]['price']-2:
+                    orders.append(Order(product, mid_coco[-1], -asks[0]['vol']))
+                    print('buy coco at',asks[0]['price'],'coco', coco_position)
+                elif bids[0]['price']>Trader.crits[-1]['price']+2:
+                    orders.append(Order(product, mid_coco[-1], -bids[0]['vol']))
+                    print('sell coco at',bids[0]['price'],'coco', coco_position)
                 Trader.last_trend=trend
                 result[product] = orders
         return result
