@@ -10,9 +10,11 @@ class Trader:
     coco_limit = 600
     banana_bal = 0
     ema = 5000
+    last_trend = 0
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
         # Initialize the method output dict as an empty dict
         result = {}
+
         pearl_position = state.position.get('PEARLS', 0)
         banana_position = state.position.get('BANANAS', 0)
         coco_position = state.position.get('COCONUTS', 0)
@@ -84,12 +86,7 @@ class Trader:
                 a100 = np.mean(mid_banana[-200:])
                 std = np.std(mid_banana[-avg_window:])
                 buy = (a10 - a100) >0
-                if buy:
-                    print('buy')
-                else:
-                    print('sell')
                 factor = int(0.1*spread)
-                print('factor:',factor)
                 if state.timestamp<600:
                     break
                 if asks[0]['price'] < acceptable_price or (asks[0]['price'] == acceptable_price and banana_position < -2):
@@ -129,17 +126,21 @@ class Trader:
                 asks = []
                 bids = []
                 spread = min(order_depth.sell_orders.keys()) - max(order_depth.buy_orders.keys())
-                while len(order_depth.sell_orders) > 0:
+                """while len(order_depth.sell_orders) > 0:
                     asks.append({'price': min(order_depth.sell_orders.keys()),
                                 'vol': order_depth.sell_orders[min(order_depth.sell_orders.keys())]})
                     del order_depth.sell_orders[min(order_depth.sell_orders.keys())]
                 while len(order_depth.buy_orders) != 0:
                     bids.append({'price': max(order_depth.buy_orders.keys()),
                                 'vol': order_depth.buy_orders[max(order_depth.buy_orders.keys())]})
-                    del order_depth.buy_orders[max(order_depth.buy_orders.keys())]
-                avg_window = 20
+                    del order_depth.buy_orders[max(order_depth.buy_orders.keys())]"""
+                avg_window = 50
                 acceptable_price = np.mean(mid_coco[-avg_window:])
-                a10 = np.mean(mid_coco[-50:])
+                factor = int(3 * spread)
+                a50 = np.mean(mid_coco[-10:])
+                a200 = np.mean(mid_coco[-50:])
+                trend = a50-a200
+                """a10 = np.mean(mid_coco[-50:])
                 a100 = np.mean(mid_coco[-200:])
                 std = np.std(mid_coco[-avg_window:])
                 buy = (a10 - a100) >0
@@ -147,7 +148,7 @@ class Trader:
                     print('buy')
                 else:
                     print('sell')
-                factor = int(0.1*spread)
+                
                 print('factor:',factor)
                 if state.timestamp<600:
                     break
@@ -165,13 +166,12 @@ class Trader:
                     orders.append(Order(product, bids[0]['price'], -bids[0]['vol']))
                     coco_position -= bids[0]['vol']
                     print("SELL", str(bids[0]['vol']) + "x", bids[0]['price'], 'coco_positions:',
-                        coco_position)
-                """elif coco_position > 0:
-                    # orders.append(Order(product, 10002, -(Trader.limit-pearl_position)))
-                    orders.append(Order(product, acceptable_price+factor, -18))
-                    orders.append(Order(product, acceptable_price-factor, 9))
-                else:
-                    orders.append(Order(product, acceptable_price+factor, -9))
-                    orders.append(Order(product, acceptable_price-factor, 18))"""
+                        coco_position)"""
+                if trend<0 and abs(trend)<0.1:
+                    print('critical point at',mid_coco[-1])
+                elif trend>0 and abs(trend)<0.1:
+                    print('critical point at',mid_coco[-1])
+                    #orders.append(Order(product, mid_coco[-1], 5))
+                Trader.last_trend=trend
                 result[product] = orders
         return result
