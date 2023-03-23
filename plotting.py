@@ -55,19 +55,19 @@ ban['bmid']=[(ban['bask'][i]+ban['bbid'][i])/2 for i in range(len(ban['bask']))]
 #plt.legend()
 #plt.show()
 
-window_size =5
+window_size =50
 i = window_size
 ma50 = [4938 for i in range(window_size)]
 while i < len(ban['bmid']) + 1:
     window_average = round(np.sum(ban['bmid'][i-window_size:i]) / window_size, 2)
     ma50.append(window_average)
     i += 1
-window_size = 50
+window_size = 200
 i = window_size
 ma200 = [4938 for i in range(window_size)]
 while i < len(ban['bmid']) + 1:
     window_average = round(np.sum(ban['bmid'][i-window_size:i]) / window_size, 2)
-    ma200.append(window_average)
+    ma200.append(window_average*1.0005)
     i += 1
 
 plt.plot([i for i in range(len(ban['bbid']))],ban['bbid'],label="bid")
