@@ -139,7 +139,7 @@ class Trader:
                 acceptable_price = np.mean(mid_coco[-avg_window:])
                 factor = int(3 * spread)
                 a50 = np.mean(mid_coco[-50:])
-                a100 = np.mean(mid_coco[-100:])
+                a100 = np.mean(mid_coco[-60:])
                 trend = a50-a100
                 """a10 = np.mean(mid_coco[-50:])
                 a100 = np.mean(mid_coco[-200:])
@@ -168,7 +168,7 @@ class Trader:
                     coco_position -= bids[0]['vol']
                     print("SELL", str(bids[0]['vol']) + "x", bids[0]['price'], 'coco_positions:',
                         coco_position)"""
-                if abs(trend)<0.5 and abs(Trader.last_trend)>0.5:
+                if abs(trend)<0.1 and abs(Trader.last_trend)>0.1:
                     print('critical point at',mid_coco[-1])
                     if mid_coco[-1]>Trader.crits[-1]['price']:
                         Trader.crits.append({'price':mid_coco[-1],'state':'sell'})
@@ -176,7 +176,7 @@ class Trader:
                     else:
                         Trader.crits.append({'price':mid_coco[-1],'state':'buy'})
                     print(Trader.crits)
-                elif abs(trend)<0.5:
+                elif abs(trend)<0.1:
                     print(Trader.crits[-1]['state'],'at',Trader.crits[-1]['price'],'ask:',asks[0]['price'],'bid:',bids[0]['price'])
                     if Trader.crits[-1]['state']=='buy':
                         if asks[0]['price'] < Trader.crits[-1]['price']:
@@ -198,6 +198,10 @@ class Trader:
                 elif bids[0]['price']>Trader.crits[-1]['price']+2:
                     orders.append(Order(product, mid_coco[-1], -bids[0]['vol']))
                     print('sell coco at',bids[0]['price'],'coco', coco_position)
+                elif coco_position>0:
+                    orders.append(Order(product, mid_coco[-1]-1, 20))
+                else:
+                    orders.append(Order(product, mid_coco[-1]+1, -20))
                 Trader.last_trend=trend
                 result[product] = orders
         return result
