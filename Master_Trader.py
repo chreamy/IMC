@@ -237,7 +237,7 @@ class Trader:
             del order_depth_pina.buy_orders[max(order_depth_pina.buy_orders.keys())]
         best_ask_volume_coconut = asks[0]['vol'];best_ask_coconut = asks[0]['price'];sellable_volume_coconut = 600 +coco_position;best_bid_volume_pina = bids_pina[0]['vol'];best_bid_pina = bids_pina[0]['price'];buyable_volume_pina = 300 -pina_position;best_bid_volume_coconut = bids[0]['vol'];best_ask_volume_pina = asks_pina[0]['vol'];buyable_volume_coconut = 600 -coco_position;sellable_volume_pina = 300 +pina_position;best_bid_coconut = bids[0]['price'];best_ask_pina = asks_pina[0]['price']
         window = 60
-        zfactor = 1.6
+        zfactor = 1.5
         ratio.append(mid_coco[-1] / np.mean(mid_pina[-5:])) #history of ratios
         zscore = (np.mean(ratio[-1:]) - np.mean(ratio[-window:])) / np.std(ratio[-window:]) #ratio zscore
         cocozscore = (np.mean(mid_coco[-1:]) - np.mean(mid_coco[-window:])) / np.std(mid_coco[-window:])
